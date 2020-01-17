@@ -1,10 +1,10 @@
 import tensorflow as tf
 
-from triplet_reid.nets.resnet_v1 import resnet_v1_50, resnet_arg_scope
+from edflow_reid.triplet_reid.triplet_reid.nets.resnet_v1 import resnet_v1_50, resnet_arg_scope
 
 _RGB_MEAN = [123.68, 116.78, 103.94]
 
-def endpoints(image, is_training):
+def endpoints(image, is_training, prefix=''):
     if image.get_shape().ndims != 4:
         raise ValueError('Input must be of size [batch, height, width, 3]')
 
@@ -14,6 +14,6 @@ def endpoints(image, is_training):
         _, endpoints = resnet_v1_50(image, num_classes=None, is_training=is_training, global_pool=True)
 
     endpoints['model_output'] = endpoints['global_pool'] = tf.reduce_mean(
-        endpoints['resnet_v1_50/block4'], [1, 2], name='pool5')
+        endpoints[prefix + 'resnet_v1_50/block4'], [1, 2], name='pool5')
 
     return endpoints, 'resnet_v1_50'
