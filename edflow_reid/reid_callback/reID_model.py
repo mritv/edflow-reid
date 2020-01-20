@@ -17,17 +17,19 @@ class reIdModel(object):
 
     def __init__(
         self,
-        model_name="resnet_v1_50",
-        head_name="fc1024",
+        model_name="triplet_reid",
+        imported_model_name="resnet_v1_50",
+        imported_head_name="fc1024",
         w=TRIP_W,
         h=TRIP_H,
         nc=3,
         edim=128,
         is_train=False,
+
     ):
         """Args:
-            model_name (str): Which base model to use.
-            head_name (str)L Which output head to use.
+            imported_model_name (str): Which base model to use.
+            imported_head_name (str)L Which output head to use.
             w (int): Image width.
             h (int): Image height.
             nc (int): Image channels.A
@@ -35,13 +37,13 @@ class reIdModel(object):
             is_train (bool): Is it training or not?
         """
         model = import_module(
-            "edflow_reid.triplet_reid.triplet_reid.nets." + model_name
+            "edflow_reid.triplet_reid.triplet_reid.nets." + imported_model_name
         )
-        head = import_module("edflow_reid.triplet_reid.triplet_reid.heads." + head_name)
+        head = import_module("edflow_reid.triplet_reid.triplet_reid.heads." + imported_head_name)
 
-        self.model_name = "triplet_reid"
+        self.model_name = model_name
 
-        with tf.variable_scope(self.model_name, reuse=tf.AUTO_REUSE):
+        with tf.variable_scope(self.model_name):
             self.images = tf.placeholder(tf.float32, shape=[None, h, w, nc])
             input_images = self.images
             endpoints, body_prefix = model.endpoints(
