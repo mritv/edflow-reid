@@ -53,7 +53,7 @@ def run_through_dataset(
     n_batches = len(batches)
     n_used_imgs = n_batches * batch_size
     embeddings = [] # np.empty((n_used_imgs, 128))
-
+    labels = []
     sess_config = tf.compat.v1.ConfigProto()
     sess_config.gpu_options.allow_growth = True
     session = tf.compat.v1.Session(config=sess_config)
@@ -66,6 +66,7 @@ def run_through_dataset(
         if i >= n_batches:
             break
         images = retrieve(batch, image_key)
+        labels_batch = retrieve(batch, "pose_pid")
         images = adjust_support(
             np.array(images),
             future_support="0->255",
@@ -76,15 +77,16 @@ def run_through_dataset(
 
         batch_embeddings = get_embedding(model, session=session, image=images)["emb"]
         embeddings += [batch_embeddings.reshape(batch_size, -1)]
-    return np.array(embeddings)
+        labels += [labels_batch]
+    return np.array(embeddings), np.array(labels)
 
 def evaluate(
     input_dataset, output_dataset, input_image_key: str, output_image_key: str
 ):
-    input_embeddings= run_through_dataset(
+    input_embeddings, input_pids = run_through_dataset(
         input_dataset, batch_size=10, image_key=input_image_key, model_name="input"
     )
-    output_embeddings = run_through_dataset(
+    output_embeddings, output_pids = run_through_dataset(
         output_dataset, batch_size=10, image_key=output_image_key, model_name="output"
     )
 
