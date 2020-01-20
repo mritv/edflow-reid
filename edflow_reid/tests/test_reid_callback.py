@@ -1,6 +1,6 @@
 from edflow.data.dataset_mixin import DatasetMixin
 import numpy as np
-from edflow_reid.reid_callback.reid_callback import get_reid_score
+from edflow_reid.reid_callback.reid_callback import *
 
 
 class TestDataset(DatasetMixin):
@@ -32,16 +32,9 @@ class TestDataset(DatasetMixin):
         return np.array(data)
 
 
-def test_reid_callback():
-    test_score = get_reid_score(
-        root,
-        data_in,
-        data_out,
-        config,
-        im_in_key="data",
-        im_out_key="data",
-        name="reid",
-    )
+def test_get_embedding():
+    test_images = np.ones((1,256,256, 3))
+    get_single_embedding(test_images)
 
 
 if __name__ == "__main__":

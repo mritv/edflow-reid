@@ -32,7 +32,7 @@ def get_embedding(model, session, image: np.ndarray):
 
 
 def run_through_dataset(
-    dataset, support: str = "-1->1", batch_size: int = 50, image_key: str = "image"
+    dataset, support: str = "-1->1", batch_size: int = 50, image_key: str = "image", model_name="",
 ):
     """
 
@@ -54,13 +54,11 @@ def run_through_dataset(
     n_used_imgs = n_batches * batch_size
     embeddings = [] # np.empty((n_used_imgs, 128))
 
-    sess_config = tf.ConfigProto()
-
+    sess_config = tf.compat.v1.ConfigProto()
     sess_config.gpu_options.allow_growth = True
+    session = tf.compat.v1.Session(config=sess_config)
 
-    session = tf.Session(config=sess_config)
-
-    model = reIdModel()
+    model = reIdModel(model_name=model_name)
     if os.path.basename(TRIP_CHECK) == "checkpoint-25000":
         initialize_model(model, TRIP_CHECK, session)
 
@@ -80,10 +78,18 @@ def run_through_dataset(
         embeddings += [batch_embeddings.reshape(batch_size, -1)]
     return np.array(embeddings)
 
-
+def evaluate(
+    input_dataset, output_dataset, input_image_key: str, output_image_key: str
+):
+    input_embeddings= run_through_dataset(
+        input_dataset, batch_size=10, image_key=input_image_key, model_name="input"
+    )
+    output_embeddings = run_through_dataset(
+        output_dataset, batch_size=10, image_key=output_image_key, model_name="output"
+    )
 
 if __name__ == "__main__":
     from abc_interpolation.data.human_gait import HumanGait_abc
 
     hg_data = HumanGait_abc({"data_split": "test"})
-    run_through_dataset(hg_data, batch_size=10, image_key="frame_anchor_1")
+    evaluate(hg_data, hg_data, output_image_key="frame_anchor_1", input_image_key="frame_anchor_1")
